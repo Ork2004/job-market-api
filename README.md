@@ -13,7 +13,7 @@ This project is being built incrementally and in the open. Check the
 roadmap below for current progress.
 
 - [x] Project scaffolding, tooling, CI-ready structure
-- [ ] FastAPI service with health check
+- [x] FastAPI service with health check
 - [ ] PostgreSQL storage layer (normalized vacancy data) + migrations
 - [ ] MongoDB storage layer (raw scraped payloads)
 - [ ] Ingestion script (public job board API → Mongo → Postgres)
@@ -60,8 +60,27 @@ external job board API
 
 ## Local development
 
-Setup instructions will be added as the corresponding pieces land
-(dependencies are introduced in the next commit).
+```bash
+python -m venv .venv
+.venv/Scripts/activate        # on Windows; use `source .venv/bin/activate` on macOS/Linux
+pip install -r requirements-dev.txt
+
+cp .env.example .env
+
+uvicorn app.main:app --reload
+```
+
+Then visit `http://127.0.0.1:8000/docs` for the interactive API docs,
+or `http://127.0.0.1:8000/health` for the liveness check.
+
+Run the test suite and checks with:
+
+```bash
+pytest
+ruff check .
+black --check .
+mypy app
+```
 
 ## License
 
