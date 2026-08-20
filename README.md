@@ -19,7 +19,8 @@ roadmap below for current progress.
 - [ ] Ingestion script (public job board API → Mongo → Postgres)
 - [ ] Redis caching layer for expensive analytics queries
 - [ ] Analytics endpoints powered by pandas/polars
-- [ ] Dockerfile + docker-compose for one-command local run
+- [x] docker-compose for local Postgres/MongoDB/Redis (not yet smoke-tested — no Docker on the dev machine used so far)
+- [ ] Dockerfile for the app itself
 - [ ] Test suite (pytest) with CI enforcement
 - [ ] GitLab CI/CD pipeline (lint, test, build, deploy)
 - [ ] Terraform-provisioned AWS environment
@@ -66,6 +67,7 @@ python -m venv .venv
 pip install -r requirements-dev.txt
 
 cp .env.example .env
+docker compose up -d          # starts Postgres, MongoDB and Redis
 
 uvicorn app.main:app --reload
 ```
