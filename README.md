@@ -14,14 +14,15 @@ roadmap below for current progress.
 
 - [x] Project scaffolding, tooling, CI-ready structure
 - [x] FastAPI service with health check
-- [ ] PostgreSQL storage layer (normalized vacancy data) + migrations
+- [x] PostgreSQL storage layer (`vacancies`, `skills`, many-to-many) + Alembic migrations
+- [x] `GET /vacancies` and `GET /vacancies/{id}` endpoints
 - [ ] MongoDB storage layer (raw scraped payloads)
 - [ ] Ingestion script (public job board API → Mongo → Postgres)
 - [ ] Redis caching layer for expensive analytics queries
 - [ ] Analytics endpoints powered by pandas/polars
 - [x] docker-compose for local Postgres/MongoDB/Redis (not yet smoke-tested — no Docker on the dev machine used so far)
 - [ ] Dockerfile for the app itself
-- [ ] Test suite (pytest) with CI enforcement
+- [x] Test suite (pytest), 6 tests passing — CI enforcement still pending
 - [ ] GitLab CI/CD pipeline (lint, test, build, deploy)
 - [ ] Terraform-provisioned AWS environment
 
@@ -68,12 +69,15 @@ pip install -r requirements-dev.txt
 
 cp .env.example .env
 docker compose up -d          # starts Postgres, MongoDB and Redis
+alembic upgrade head          # creates the vacancies/skills tables
 
 uvicorn app.main:app --reload
 ```
 
 Then visit `http://127.0.0.1:8000/docs` for the interactive API docs,
-or `http://127.0.0.1:8000/health` for the liveness check.
+`http://127.0.0.1:8000/health` for the liveness check, or
+`http://127.0.0.1:8000/vacancies` for the (empty, until ingestion
+exists) vacancies list.
 
 Run the test suite and checks with:
 
