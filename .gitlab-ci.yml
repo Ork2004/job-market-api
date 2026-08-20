@@ -1,0 +1,46 @@
+stages:
+  - lint
+  - test
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+
+cache:
+  paths:
+    - .cache/pip
+
+.python-base:
+  image: python:3.13-slim
+  before_script:
+    - pip install -r requirements-dev.txt
+
+lint:
+  extends: .python-base
+  stage: lint
+  script:
+    - ruff check .
+    - black --check .
+    - mypy app
+
+test:
+  extends: .python-base
+  stage: test
+  services:
+    - postgres:16-alpine
+    - mongo:7
+    - redis:7-alpine
+  variables:
+    POSTGRES_USER: job_market
+    POSTGRES_PASSWORD: job_market
+    POSTGRES_DB: job_market
+    POSTGRES_HOST: postgres
+    POSTGRES_PORT: "5432"
+    MONGO_URI: "mongodb://mongo:27017"
+    REDIS_URL: "redis://redis:6379/0"
+  script:
+    # Round-trips the hand-written migration against a real Postgres
+    # instance (upgrade -> downgrade -> upgrade) before trusting it.
+    - alembic upgrade head
+    - alembic downgrade base
+    - alembic upgrade head
+    - pytest --cov=app
