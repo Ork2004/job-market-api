@@ -22,9 +22,15 @@ roadmap below for current progress.
 - [ ] Analytics endpoints powered by pandas/polars
 - [x] docker-compose for local Postgres/MongoDB/Redis (not yet smoke-tested — no Docker on the dev machine used so far)
 - [ ] Dockerfile for the app itself
-- [x] Test suite (pytest), 6 tests passing — CI enforcement still pending
-- [ ] GitLab CI/CD pipeline (lint, test, build, deploy)
+- [x] Test suite (pytest), 6 tests passing
+- [x] `.gitlab-ci.yml`: lint + test stages, test job runs against real Postgres/MongoDB/Redis service containers (⚠️ not yet actually running anywhere — repo lives on GitHub, see note below)
 - [ ] Terraform-provisioned AWS environment
+
+> **Note on GitLab CI:** the repo is currently hosted on GitHub. The
+> `.gitlab-ci.yml` file is correct but inert until this project is
+> either mirrored to GitLab or connected via GitLab's "CI/CD for
+> external repositories" — otherwise no pipeline actually runs, and
+> there's nothing to point to as evidence in an interview.
 
 ## Tech stack
 
