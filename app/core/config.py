@@ -11,6 +11,9 @@ class Settings(BaseSettings):
     postgres_host: str = "localhost"
     postgres_port: int = 5432
 
+    mongo_uri: str = "mongodb://localhost:27017"
+    mongo_db: str = "job_market"
+
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
     @property
