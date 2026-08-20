@@ -16,8 +16,9 @@ roadmap below for current progress.
 - [x] FastAPI service with health check
 - [x] PostgreSQL storage layer (`vacancies`, `skills`, many-to-many) + Alembic migrations
 - [x] `GET /vacancies` and `GET /vacancies/{id}` endpoints
-- [ ] MongoDB storage layer (raw scraped payloads)
-- [ ] Ingestion script (public job board API → Mongo → Postgres)
+- [x] MongoDB storage layer (raw scraped payloads, unique index on source+external_id)
+- [x] Ingestion script: hh.ru API → MongoDB (raw) — see note below on running it
+- [ ] Normalization job: MongoDB (raw) → PostgreSQL (structured)
 - [ ] Redis caching layer for expensive analytics queries
 - [ ] Analytics endpoints powered by pandas/polars
 - [x] docker-compose for local Postgres/MongoDB/Redis (not yet smoke-tested — no Docker on the dev machine used so far)
@@ -31,6 +32,17 @@ roadmap below for current progress.
 > either mirrored to GitLab or connected via GitLab's "CI/CD for
 > external repositories" — otherwise no pipeline actually runs, and
 > there's nothing to point to as evidence in an interview.
+
+> **Note on running the ingestion script:** hh.ru sits behind
+> DDoS-Guard, which returns `403 Forbidden` for requests coming from
+> datacenter/cloud IP ranges — confirmed with a full browser
+> `User-Agent`, so it's IP-reputation-based, not a missing-header
+> issue. This means `python -m scripts.ingest_vacancies` will not
+> work from most CI runners or cloud VMs; it needs to run from an
+> ordinary residential/office connection. The script itself is fully
+> unit-tested (`tests/test_ingest_vacancies.py`) with a mocked HTTP
+> transport and a fake MongoDB collection, so its correctness doesn't
+> depend on hh.ru being reachable from wherever tests run.
 
 ## Tech stack
 
@@ -82,8 +94,15 @@ uvicorn app.main:app --reload
 
 Then visit `http://127.0.0.1:8000/docs` for the interactive API docs,
 `http://127.0.0.1:8000/health` for the liveness check, or
-`http://127.0.0.1:8000/vacancies` for the (empty, until ingestion
-exists) vacancies list.
+`http://127.0.0.1:8000/vacancies` for the vacancies list (empty until
+both ingestion and the Mongo → Postgres normalization job exist).
+
+To pull raw vacancies into MongoDB (run from a normal, non-cloud IP —
+see the hh.ru note above):
+
+```bash
+python -m scripts.ingest_vacancies --query python --pages 2
+```
 
 Run the test suite and checks with:
 
