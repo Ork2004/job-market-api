@@ -19,11 +19,11 @@ roadmap below for current progress.
 - [x] MongoDB storage layer (raw scraped payloads, unique index on source+external_id)
 - [x] Ingestion script: hh.ru API → MongoDB (raw) — see note below on running it
 - [x] Normalization job: MongoDB (raw) → PostgreSQL (structured); skill extraction deferred (see note below)
-- [ ] Redis caching layer for expensive analytics queries
-- [ ] Analytics endpoints powered by pandas/polars
+- [ ] Redis caching layer for `/analytics/salary-stats`
+- [x] `GET /analytics/salary-stats` — pandas groupby (location/employment_type/company, split by currency)
 - [x] docker-compose for local Postgres/MongoDB/Redis (not yet smoke-tested — no Docker on the dev machine used so far)
 - [ ] Dockerfile for the app itself
-- [x] Test suite (pytest), 6 tests passing
+- [x] Test suite (pytest), 22 tests passing
 - [x] `.gitlab-ci.yml`: lint + test stages, test job runs against real Postgres/MongoDB/Redis service containers (⚠️ not yet actually running anywhere — repo lives on GitHub, see note below)
 - [ ] Terraform-provisioned AWS environment
 
@@ -111,6 +111,10 @@ non-cloud IP — see the hh.ru note above):
 python -m scripts.ingest_vacancies --query python --pages 2
 python -m scripts.normalize_vacancies
 ```
+
+Then `http://127.0.0.1:8000/analytics/salary-stats?group_by=location`
+returns per-location salary stats (also accepts `employment_type` and
+`company`).
 
 Run the test suite and checks with:
 
