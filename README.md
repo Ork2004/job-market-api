@@ -18,7 +18,7 @@ roadmap below for current progress.
 - [x] `GET /vacancies` and `GET /vacancies/{id}` endpoints
 - [x] MongoDB storage layer (raw scraped payloads, unique index on source+external_id)
 - [x] Ingestion script: hh.ru API → MongoDB (raw) — see note below on running it
-- [ ] Normalization job: MongoDB (raw) → PostgreSQL (structured)
+- [x] Normalization job: MongoDB (raw) → PostgreSQL (structured); skill extraction deferred (see note below)
 - [ ] Redis caching layer for expensive analytics queries
 - [ ] Analytics endpoints powered by pandas/polars
 - [x] docker-compose for local Postgres/MongoDB/Redis (not yet smoke-tested — no Docker on the dev machine used so far)
@@ -43,6 +43,14 @@ roadmap below for current progress.
 > unit-tested (`tests/test_ingest_vacancies.py`) with a mocked HTTP
 > transport and a fake MongoDB collection, so its correctness doesn't
 > depend on hh.ru being reachable from wherever tests run.
+
+> **Note on skills:** the `skills` / `vacancy_skills` tables exist but
+> stay empty for now. hh.ru's search endpoint (used by the ingestion
+> script) doesn't return `key_skills` — only the per-vacancy detail
+> endpoint (`GET /vacancies/{id}`) does, which would mean one extra
+> HTTP request per posting against an API that's already blocking
+> datacenter IPs. Populating skills is a follow-up once that detail
+> fetch is added.
 
 ## Tech stack
 
@@ -94,14 +102,14 @@ uvicorn app.main:app --reload
 
 Then visit `http://127.0.0.1:8000/docs` for the interactive API docs,
 `http://127.0.0.1:8000/health` for the liveness check, or
-`http://127.0.0.1:8000/vacancies` for the vacancies list (empty until
-both ingestion and the Mongo → Postgres normalization job exist).
+`http://127.0.0.1:8000/vacancies` for the vacancies list.
 
-To pull raw vacancies into MongoDB (run from a normal, non-cloud IP —
-see the hh.ru note above):
+To pull data through the full pipeline (run ingestion from a normal,
+non-cloud IP — see the hh.ru note above):
 
 ```bash
 python -m scripts.ingest_vacancies --query python --pages 2
+python -m scripts.normalize_vacancies
 ```
 
 Run the test suite and checks with:
