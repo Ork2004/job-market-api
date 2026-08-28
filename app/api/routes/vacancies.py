@@ -1,16 +1,11 @@
-from typing import Annotated
+from fastapi import APIRouter, HTTPException, Query
 
-from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.orm import Session
-
-from app.db.session import get_db
+from app.api.deps import DbSession
 from app.models.vacancy import Vacancy
 from app.repositories import vacancy as vacancy_repo
 from app.schemas.vacancy import VacancyOut
 
 router = APIRouter(prefix="/vacancies", tags=["vacancies"])
-
-DbSession = Annotated[Session, Depends(get_db)]
 
 
 @router.get("", response_model=list[VacancyOut])
